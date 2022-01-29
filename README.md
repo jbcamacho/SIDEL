@@ -1,0 +1,2 @@
+# SIDEL
+The SIDEL system allows the end user to sign digital documents of any kind, using a certificate and personal private key provided by FIELAV. End users will have the ability to sign a document, add their signature to a document which has already been signed, and verify a document signature; all this given an input of a digital document, a digital certificate (.cert) and the corresponding private key (.key) of the user.
