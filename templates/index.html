@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>INDEX</h1>
+    <form method="POST" action="" name="certForm" enctype="multipart/form-data">
+        <!--
+        {{ form.csrf_token }}
+        {{ form.form_field_cert}}
+        <button type="submit">Upload</button>
+        -->
+        <label for="file">Choose file to upload</label>
+        <input type="file" name="certfile" id="certfile"
+            value="">
+        <input type="submit" name="" value="SubmitUp">
+    </form>
+{% endblock content %}

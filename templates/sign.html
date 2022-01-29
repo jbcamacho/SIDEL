@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Firma de documento digital</h1>
+            <div class="form-group">
+                <label for="docFile">Selecciona el documento (.*) que deseas firmar</label>
+                <input class="btn form-control-file" type="file" value=""
+                name="docFile" id="docFile" accept=".txt,.doc,.docx,.pdf">
+            </div>
+
+            <div class="form-group">
+                <label for="privKeyFile">Selecciona tu llave privada (.key)</label>
+                <input class="btn form-control-file" type="file" value=""
+                name="privKeyFile" id="privKeyFile" accept=".key">
+            </div>
+        <input class="btn btn-outline-primary" type="submit" name="sign_doc" id="sign_doc" value="Firmar Documento">
+  
+
+    <div id="server_response">
+        <br><br>
+    </div>
+
+    <script>
+        var signature, doc_digest, privateKey, doc_name;
+        $(document).ready(function(){
+            
+            $('#docFile').change(function(e){
+                const fileList = event.target.files;
+                var file = event.target.files[0];
+                doc_name = file.name;
+                var reader = new FileReader();
+                reader.onload = function(event) {
+                    data = event.target.result;
+                    var md = forge.md.sha512.create();
+                    md.update(data);
+                    doc_digest = md
+                };
+                reader.readAsBinaryString(file);
+            });
+
+            $('#privKeyFile').change(function(e){
+                const fileList = event.target.files;
+                var file = event.target.files[0];
+                var reader = new FileReader();
+                var pki = forge.pki;
+                reader.onload = function(event) {
+                    privateKey = pki.privateKeyFromPem(event.target.result);
+                };
+                reader.readAsBinaryString(file);
+            });
+            
+            $('#sign_doc').click(function() {
+                signature = privateKey.sign(doc_digest, scheme='RSASSA-PKCS1-V1_5');
+                signature = btoa(signature);
+                $.ajax({
+                    url:"/sign_process",
+                    type:"GET",
+                    data: { signature_js: signature, document_name_js: doc_name},
+                    success: function(response){
+                        data = response
+                        server_response = data
+                        href_file = '/download_sign_document?file_sign=' + data
+                        if (server_response == "cert_expired"){
+                            HTML_response = '<p>El certificado ha expirado.</p>';
+                        } else if(server_response == "invalid_session"){
+                            HTML_response = '<p>No ha iniciado sesión. Favor de iniciar sesión en el menú Login de la esquina superior derecha."</p>';
+                        }else if(server_response == "error"){
+                            HTML_response = '<p>Error inesperado Vuelve a intentarlo más tarde.</p>';
+                        }else{
+                            HTML_response = '<label for="' + data + '">Descargar Firma Digital (.sig)</label> \
+                            <a href="' + href_file + '" class="btn btn-primary">' + data + '</a>';
+                        }
+                        $('#server_response').html(HTML_response);
+                    },
+                    error: function(error){
+                        //
+                    },
+                });
+            });
+
+            
+
+        });
+    </script>
+{% endblock content %}

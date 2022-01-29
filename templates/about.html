@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Acerca de SIDEL</h1><br>
+    <div>
+    <p class="article-content"> <b>SIDEL</b> o <i>Signado de documentos electrónicos</i> es, por sí solo, un sistema funcional completo, no obstante, también forma parte de un de otro sistema compuesto de tres subsistemas (donde SIDEL es uno de ellos) que juntos componen una infraestructura de llave pública (PKI) bajo el estándar X.509.</p>
+    
+    <figure class="text-center">
+        <img src="{{url_for('static', filename='Perspectiva_del_producto.jpg')}}" class="figure-img img-fluid rounded" alt="...">
+        <figcaption class="figure-caption">SIDEL como subsistema.</figcaption>
+    </figure>
+    
+    <p class="article-content">La figura muestra la relación que existe entre los 3 subsistemas, donde:
+        <ul>
+            <li> <b>FIELAV</b> hace referencia al subsistema de <i>Gestión De Firma Electrónica Avanzada</i>; Se encarga de emitir, para el usuario, una firma electrónica electrónica avanzada. FIELAV funciona como la entidad certificadora del sistema mostrado en la figura 1,</li>
+            <li> <b>VELSEN</b>, por su parte, hace referencia al subsistema de <i>Votaciones Electrónicas Seguras No Anónimas</i>; Se encarga de administrar un proceso de votaciones electrónicas no anónimas para un proceso electoral seguro.</li>
+        </ul>
+        Cada uno de los subsistemas funciona de manera independiente, la “modularidad” que estos poseen permiten que sean desarrollados de manera independiente y puedan ser reemplazados sencillamente durante el ciclo de vida del sistema.
+    </p>
+</div>
+
+{% endblock content %}

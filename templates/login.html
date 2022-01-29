@@ -1,0 +1,153 @@
+{% extends "layout.html" %}
+{% block content %}
+    {% if py_login == 0: %} 
+        <div id="server_response">
+            <h1>Inicio de Sesión</h1>
+            <div class="form-group">
+                <label for="certFile">Selecciona tu certificado (.crt)</label>
+                <input class="btn form-control-file" type="file" value=""
+                name="certFile" id="certFile" accept=".crt">
+            </div>
+
+            <div class="form-group">
+                <label for="privKeyFile">Selecciona tu llave privada (.key)</label>
+                <input class="btn form-control-file" type="file" value=""
+                name="privKeyFile" id="privKeyFile" accept=".key">
+            </div>
+                <input class="btn btn-outline-primary" type="submit" name="logAuth" id="logAuth" value="Login">  
+        </div>
+    {% else: %}
+        <figure class="rounded float-left">
+            <img src="{{url_for('static', filename='avatar.jpg')}}" class="figure-img img-fluid rounded" width="150" height="150">
+            <figcaption class="figure-caption">{{userid}}</figcaption>
+        </figure>
+        <br>
+        <p class="lead">Bienvenido a SIDEL para disfrutar de nuestros servicios proceda a alguna de las opciones presentadas en la barra de navegación.</p>
+        <br>
+        <table class="table table-hover table-striped border">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Certificado Digital</th>
+                <th scope="col">Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for key, value in cert.items() %}
+                <tr>
+                    <th scope="row">{{ loop.index }}</th>
+                    <td>{{key|replace("cert_", "")|replace("_js", "")}}</td>
+                    <td>{{value}}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+    <script>
+        var privateKey;
+        var cert = {}, cert_serial;
+        
+        $(document).ready(function(){
+            
+            $('#certFile').change(function(e){
+                const fileList = event.target.files;
+                var file = event.target.files[0];
+                var reader = new FileReader();
+                var pki = forge.pki;
+                reader.onload = function(event) {
+                    var certificate = pki.certificateFromPem(event.target.result);
+                    cert_serial = certificate.serialNumber;
+                    cert["serial"]      = '0x'.concat(certificate.serialNumber);
+                    cert["notBefore"]   = certificate.validity.notBefore;
+                    cert["notAfter"]    = certificate.validity.notAfter;
+                    cert["version"]     = certificate.version;
+                    cert["signature"]   = btoa(certificate.signature);
+                    cert_subject = certificate.subject.attributes;
+                    for (var i = 0; i < cert_subject.length; i++){
+                        cert[cert_subject[i].name] = cert_subject[i].value;
+                    }
+                };
+                reader.readAsBinaryString(file);
+            });
+
+            $('#privKeyFile').change(function(e){
+                const fileList = event.target.files;
+                var file = event.target.files[0];
+                var reader = new FileReader();
+                var pki = forge.pki;
+                reader.onload = function(event) {
+                    privateKey = pki.privateKeyFromPem(event.target.result);
+                };
+                reader.readAsBinaryString(file);
+            });
+            
+            $('#logAuth').click(function() {
+                $.ajax({
+                    url:"/login_auth",
+                    type:"GET",
+                    data: { cert_serial_js: cert_serial},
+                    success: function(server_response){
+                        /// GET CHALLENGE FROM SERVER ///
+                        var challenge = server_response;
+                        var challenge_client = forge.md.sha512.create();
+                        /// CONCAT '1' TO THE CHALLENGE AS RESPONSE ///
+                        challenge_client.update(String(challenge).concat('1'));
+                        /// SIGN CHALLENGE RESPONSE ///
+                        var challenge_response = privateKey.sign(challenge_client, scheme='RSASSA-PKCS1-V1_5');
+                        challenge_response = btoa(challenge_response);
+                        $.ajax({
+                            url:"/login_auth_response",
+                            type:"GET",
+                            data: { challenge_response_js           : challenge_response,
+                                    challenge_js                    : challenge,
+                                    cert_serial_js                  : cert_serial,
+                                    cert_commonName_js              : cert['commonName'],
+                                    cert_countryName_js             : cert['countryName'],
+                                    cert_emailAddress_js            : cert['emailAddress'],
+                                    cert_localityName_js            : cert['localityName'],
+                                    cert_notAfter_js                : cert['notAfter'],
+                                    cert_notBefore_js               : cert['notBefore'],
+                                    cert_organizationName_js        : cert['organizationName'],
+                                    cert_organizationalUnitName_js  : cert['organizationalUnitName'],
+                                    cert_signature_js               : cert['signature'],
+                                    cert_stateOrProvinceName_js     : cert['stateOrProvinceName'],
+                                    cert_version_js                 : cert['version']
+                            },
+                            success: function(server_response){
+                                switch(server_response){
+                                    case "valid_signature":
+                                        goToRoot_href = document.getElementById("goToRoot").href;
+                                        HTML_response = '<label for="log_go">Bienvenido '+ cert['commonName'] +' para continuar espere o presione continuar</label> \
+                                        <br> \
+                                        <a id="log_go" href="' + goToRoot_href + '" class="btn btn-primary">Continuar</a>';
+                                        window.setTimeout(function() {
+                                        location.href = goToRoot_href
+                                        }, 1500);
+                                        break;
+                                    case "invalid_signature":
+                                        break;
+                                    case "cert_not_found":
+                                        break;
+                                    case "cert_expired":
+                                        break;
+                                    default:
+                                        HTML_response = "Error inesperado";
+                                        break;
+                                }
+                                $('#server_response').html(HTML_response);
+                            },
+                            error: function(error){
+                                //
+                            },
+                        });
+                    },
+                    error: function(error){
+                        //
+                    },
+                });
+            });
+
+        });
+    </script>
+{% endblock content %}
+

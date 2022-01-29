@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Verificación asociada a documento digital</h1>
+    {% if py_verify == "":  %}
+        <form method="POST" action="" name="verifyForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="docFile">Selecciona el documento (.*) que deseas verificar</label><br>
+                <input class="btn form-control-file" type="file" value=""
+                name="docFile" id="docFile" accept=".txt,.doc,.docx,.pdf">
+            </div>
+
+            <div class="form-group">
+                <label for="signFile">Selecciona la firma del documento (.sig)</label><br>
+                <input class="btn form-control-file" type="file" value=""
+                name="signFile" id="signFile" accept=".sig">
+            </div>
+            
+            <input class="btn btn-outline-primary"  type="submit" name="" value="Verificar">
+        </form>
+    {% elif verify_response == "cert_not_found": %}
+    <p>FIRMA INVALIDA. Motivo: Existe uno o mas certificados —asociados a la firma— los cuales no fueron expedidos por SIDEL.</p>
+    {% elif verify_response == "cert_expired": %}
+        <p>FIRMA INVALIDA. Motivo: Existe uno o mas certificados —asociados a la firma— los cuales han expirado.</p>
+    {% elif verify_response == "invalid_signature": %}
+        <p>FIRMA INVALIDA. Motivo: Existe uno o mas certificados —asociados a la firma— los cuales son discrepantes con el documento.</p>
+    {% elif verify_response == "valid_signature": %}
+        <p>FIRMA VALIDA. La firma asociada al documento es valida.</p>
+    {% else: %}
+        <p>ERROR INESPERADO. Favor de intentar mas tarde.</p>
+    {% endif %}
+{% endblock content %}
