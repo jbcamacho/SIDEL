@@ -1,16 +1,12 @@
 #### FLASK LIBS ####
-from flask import Flask, render_template, redirect, url_for, request, json
-from flask import send_file, send_from_directory, safe_join, abort
-from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileAllowed, FileRequired
-from werkzeug.utils import secure_filename
+from flask import Flask, render_template, request
+from flask import send_from_directory
 from werkzeug.exceptions import HTTPException
 # from flask import send_file, send_from_directory, safe_join, abort
 #### FLASK LIBS ####
 
 #### SYSTEM LIBS ####
-from shutil import rmtree
-import os, sys
+import os
 #### SYSTEM LIBS ####
 
 ### USER DEFINED MODULES ####
