@@ -17,7 +17,7 @@ from server_modules import sidel_utils as sidel
 
 app = Flask(__name__)
 
-app.config['SECRECT_KEY'] = "71a2c6dabb9caab81d08a2efbd9e40f9519be9c504"
+app.config['SECRET_KEY'] = "71a2c6dabb9caab81d08a2efbd9e40f9519be9c504"
 LOGIN_DEBUG = 0
 posts = [
     {
